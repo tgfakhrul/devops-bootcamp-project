@@ -1,0 +1,17 @@
+# Terraform state files
+*.tfstate
+*.tfstate.backup
+
+# Terraform override files (sensitive)
+terraform.tfvars
+
+# Crash logs
+crash.log
+
+# Terraform working directory
+.terraform/
+
+# Optional logs and backups
+*.log
+*.tfvars.backup
+
