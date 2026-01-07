@@ -38,3 +38,25 @@ variable "nat_gateway_name" {
     description = "NAT Gateway Name"
     type = string
 }
+
+variable "instance_type" {
+  description = "Default Instance Type"
+  default = "t3.micro"
+}
+
+variable "ami" {
+  description = "AMI Version"
+  type = string
+}
+
+variable "webserver_ip" {
+  description = "Web Server Private IP"
+}
+
+variable "ansible_ip" {
+  description = "Web Server Private IP"
+}
+
+variable "monitoringserver_ip" {
+  description = "Web Server Private IP"
+}
