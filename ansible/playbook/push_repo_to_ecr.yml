@@ -2,7 +2,7 @@
 - name: Build and Push Docker Image to ECR
   hosts: localhost
   connection: local
-  become: true
+  #become: true
   vars:
     repo_url: "{{ repo_url }}"
   tasks:
