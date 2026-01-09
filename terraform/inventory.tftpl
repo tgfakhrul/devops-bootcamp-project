@@ -1,0 +1,19 @@
+[web]
+web-server ansible_host=${web_server_id} private_ip=${web_server_private_ip}
+
+[ansible_controller]
+ansible-controller ansible_host=${ansible_controller_id} private_ip=${ansible_controller_private_ip}
+
+[monitoring]
+monitoring-server ansible_host=${monitoring_server_id} private_ip=${monitoring_server_private_ip}
+
+[prometheus_exporters]
+web-server
+ansible-controller
+monitoring-server
+
+[all:vars]
+ansible_user=ubuntu
+ansible_connection=amazon.aws.aws_ssm
+ansible_python_interpreter=/usr/bin/python3
+repo_url=${ecr_repo_url}
