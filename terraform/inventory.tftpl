@@ -1,0 +1,27 @@
+# inventory.tftpl
+
+[nodes]
+%{ for instance in instances ~}
+${instance.tags_all.Name} ansible_host=${instance.private_ip}
+%{ endfor ~}
+
+[web_server]
+${web_server.tags_all.Name} ansible_host=${web_server.private_ip}
+
+[ansible_controller]
+${ansible_controller.tags_all.Name} ansible_host=${ansible_controller.private_ip}
+
+[monitoring_server]
+${monitoring_server.tags_all.Name} ansible_host=${monitoring_server.private_ip}
+
+[prometheus_exporters]
+%{ for exporter in prometheus_node_exporter ~}
+${exporter.tags_all.Name} ansible_host=${exporter.private_ip}
+%{ endfor ~}
+
+[ecr_repo] repo_url=${ecr_repo_url}
+
+[all:vars]
+ansible_user=ubuntu
+ansible_connection=amazon.aws.aws_ssm
+ansible_python_interpreter=/usr/bin/python3

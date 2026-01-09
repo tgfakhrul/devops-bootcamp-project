@@ -7,7 +7,7 @@ resource "aws_ecr_repository" "final_project" {
     }
 
     tags = {
-        Name = "final-project-ecr"
+        Name = "final-project-fakhrul"
     }
 }
 

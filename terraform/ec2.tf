@@ -48,6 +48,14 @@ module "ec2_monitoring_server" {
   associate_public_ip_address = false
   vpc_security_group_ids = [module.security_group_private.security_group_id]
   iam_instance_profile = aws_iam_instance_profile.devops_ssm_profile.name
+  
+  user_data = <<-EOF
+                    #!/bin/bash
+                    sudo apt update && sudo apt upgrade -y
+                    sudo apt install pipx -y
+                    pipx install --include-deps ansible
+                    pipx ensurepath
+                    EOF
 
   tags = {
     Name        = "monitoring-server"

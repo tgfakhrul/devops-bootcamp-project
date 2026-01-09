@@ -1,0 +1,20 @@
+---
+- name: Configure Monitoring Server
+  hosts: monitoring_server
+  become: true
+  roles:
+    - role: geerlingguy.docker
+    - role: geerlingguy.prometheus
+    - role: geerlingguy.grafana
+
+  tasks:
+    # --- Cloudflare Tunnel ---
+    - name: Run Cloudflare Tunnel container
+      docker_container:
+        name: cloudflared
+        image: cloudflare/cloudflared:latest
+        state: started
+        restart_policy: always
+        command: tunnel run
+        volumes:
+          - /home/ubuntu/.cloudflared:/etc/cloudflared
