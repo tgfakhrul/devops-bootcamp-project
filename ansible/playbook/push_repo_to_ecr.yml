@@ -4,9 +4,8 @@
   connection: local
   become: true
   vars:
-    repo_url: "{{ hostvars['localhost']['repo_url'] | default('') }}"
+    repo_url: "{{ repo_url }}"
   tasks:
-    # Step 1: Clone repo
     - name: Clone lab-final-project repo
       git:
         repo: "https://github.com/Infratify/lab-final-project.git"
@@ -14,7 +13,6 @@
         version: HEAD
         force: yes
 
-    # Step 2: Build Docker image
     - name: Build my-devops-project image
       docker_image:
         name: my-devops-project
@@ -23,14 +21,10 @@
           path: ./lab-final-project
         source: build
 
-    # Step 3: Tag image for ECR
     - name: Tag image for ECR
       command: >
         docker tag my-devops-project:latest {{ repo_url }}:latest
-      when: repo_url != ""
 
-    # Step 4: Push image to ECR
     - name: Push image to ECR
       command: >
         docker push {{ repo_url }}:latest
-      when: repo_url != ""
