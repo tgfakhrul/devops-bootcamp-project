@@ -10,21 +10,27 @@ data "aws_iam_policy_document" "instance_assume_role_policy" {
   }
 }
 
-# Create IAM Role
+# IAM Role for EC2 (SSM)
 resource "aws_iam_role" "instance" {
-  name               = "instance_role"
+  name               = "devops-ec2-ssm-role"
   path               = "/system/"
   assume_role_policy = data.aws_iam_policy_document.instance_assume_role_policy.json
+
+  tags = {
+    Name        = "devops-ec2-ssm-role"
+    Environment = "dev"
+    ManagedBy   = "terraform"
+  }
 }
 
-# Attach AWS Managed Policy for SSM Access
+# Attach SSM Managed Policy
 resource "aws_iam_role_policy_attachment" "ssm" {
-  role          = aws_iam_role.instance.name
-  policy_arn    = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+  role       = aws_iam_role.instance.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
 }
 
-# Create Instance Profile
+# Instance Profile
 resource "aws_iam_instance_profile" "devops_ssm_profile" {
-  name = "devops_ssm_profile"
+  name = "devops-ssm-instance-profile"
   role = aws_iam_role.instance.name
 }

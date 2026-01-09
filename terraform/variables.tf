@@ -4,6 +4,12 @@ variable "region" {
   default = "ap-southeast-1"
 }
 
+variable "azs" {
+  description = "Availability Zones"
+  type = list(string)
+  default = ["ap-southeast-1a"]
+}
+
 variable "vpc_name" {
   description = "VPC Name"
   type = string
@@ -49,14 +55,17 @@ variable "ami" {
   type = string
 }
 
-variable "webserver_ip" {
+variable "web_server_ip" {
+  type = string
   description = "Web Server Private IP"
 }
 
 variable "ansible_ip" {
-  description = "Web Server Private IP"
+  description = "Ansible Controller Private IP"
+  type = string
 }
 
-variable "monitoringserver_ip" {
-  description = "Web Server Private IP"
+variable "monitoring_server_ip" {
+  type = string
+  description = "Monitoring Server Private IP"
 }

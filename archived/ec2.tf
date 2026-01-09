@@ -4,11 +4,10 @@ module "ec2_webserver" {
   name  = "web-server"
   ami   = var.ami
   instance_type = var.instance_type
-  subnet_id     = module.vpc.public_subnets[0]
-  private_ip = var.webserver_ip
+  subnet_id     = module.devops_vpc.public_subnets[0]
+  private_ip = var.web_server_ip
   associate_public_ip_address = true
-  create_eip = true   # Allocate Elastic IP and Associate
-  vpc_security_group_ids = [module.security_group_public.security_group_id]
+  vpc_security_group_ids = [module.devops_public_sg.security_group_id]
   iam_instance_profile = aws_iam_instance_profile.devops_ssm_profile.name
 
   tags = {
@@ -18,16 +17,21 @@ module "ec2_webserver" {
   }
 }
 
+resource "aws_eip" "web_eip" {
+  domain   = "vpc"
+  instance = module.ec2_webserver.id
+}
+
 module "ec2_ansible_controller" {
   source = "terraform-aws-modules/ec2-instance/aws"
 
   name = "ansible-controller"
   ami = var.ami
   instance_type = var.instance_type
-  subnet_id = module.vpc.private_subnets[0]
+  subnet_id = module.devops_vpc.private_subnets[0]  
   private_ip = var.ansible_ip
   associate_public_ip_address = false
-  vpc_security_group_ids = [module.security_group_private.security_group_id]
+  vpc_security_group_ids = [module.devops_private_sg.security_group_id]
   iam_instance_profile = aws_iam_instance_profile.devops_ssm_profile.name
 
   tags = {
@@ -43,10 +47,10 @@ module "ec2_monitoring_server" {
   name = "monitoring-server"
   ami = var.ami
   instance_type = var.instance_type
-  subnet_id = module.vpc.private_subnets[0]
-  private_ip = var.monitoringserver_ip
+  subnet_id = module.devops_vpc.private_subnets[0]
+  private_ip = var.monitoring_server_ip
   associate_public_ip_address = false
-  vpc_security_group_ids = [module.security_group_private.security_group_id]
+  vpc_security_group_ids = [module.devops_private_sg.security_group_id]
   iam_instance_profile = aws_iam_instance_profile.devops_ssm_profile.name
   
   user_data = <<-EOF

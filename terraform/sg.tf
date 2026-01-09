@@ -1,49 +1,54 @@
-module "security_group_public" {
+# Public Security Group
+module "devops_public_sg" {
   source  = "terraform-aws-modules/security-group/aws"
 
-  name = "devops-public-sg"
-  description = "Web Server Security Group"
-  vpc_id = module.vpc.vpc_id
+  name        = "devops-public-sg"
+  description = "Security group for public web servers"
+  vpc_id      = module.devops_vpc.vpc_id
 
-# Ingress Rules
   ingress_with_cidr_blocks = [
-    # HTTP -Allow From Everywhere
     {
-      from_port   = 80
-      to_port     = 80
-      protocol    = "tcp"
-      description = "HTTP from everywhere"
+      rule        = "http-80-tcp"
       cidr_blocks = "0.0.0.0/0"
     },
-    # Prometheus Node Exporter
     {
       from_port   = 9100
       to_port     = 9100
       protocol    = "tcp"
-      description = "Prometheus Node Exporter from Monitoring Server"
-      cidr_blocks = "0.0.0.0/0" #need fix Allow from Monitoring Server IP
+      description = "Prometheus Node Exporter"
+      cidr_blocks = "${var.monitoring_server_ip}/32"
     },
-    # SSH from VPC subnet only
     {
-      from_port   = 22
-      to_port     = 22
-      protocol    = "tcp"
-      description = "SSH from VPC CIDR"
-      cidr_blocks = module.vpc.vpc_cidr_block
-    },
+      rule        = "ssh-tcp"
+      cidr_blocks = module.devops_vpc.vpc_cidr_block
+    }
   ]
-  # Allow All Outbound Traffic
+
   egress_rules = ["all-all"]
+
+  tags = {
+    Name = "devops-public-sg"
+  }
 }
 
-module "security_group_private" {
+# Private Security Group
+module "devops_private_sg" {
   source  = "terraform-aws-modules/security-group/aws"
 
   name        = "devops-private-sg"
-  description = "Ansible Controller & Monitoring Server Security Group"
-  vpc_id      = module.vpc.vpc_id
+  description = "Security group for Ansible Controller and Monitoring Server"
+  vpc_id      = module.devops_vpc.vpc_id
 
-  ingress_cidr_blocks = [module.vpc.vpc_cidr_block]
-  ingress_rules       = ["ssh-tcp"]
-  egress_rules        = ["all-all"]
+  ingress_with_cidr_blocks = [
+    {
+      rule        = "ssh-tcp"
+      cidr_blocks = module.devops_vpc.vpc_cidr_block
+    }
+  ]
+
+  egress_rules = ["all-all"]
+
+  tags = {
+    Name = "devops-private-sg"
+  }
 }

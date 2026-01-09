@@ -1,37 +1,38 @@
 module "devops_vpc" {
   source  = "terraform-aws-modules/vpc/aws"
+  version = "~> 5.0"
 
-  name = var.vpc_name
+  name = "devops-vpc"
   cidr = "10.0.0.0/24"
 
-  azs = var.azs
+  azs = ["ap-southeast-1a"]
 
   public_subnets  = ["10.0.0.0/25"]
   private_subnets = ["10.0.0.128/25"]
 
-  public_subnet_names  = [var.public_subnet_name]
-  private_subnet_names = [var.private_subnet_name]
+  public_subnet_names  = ["devops-public-subnet"]
+  private_subnet_names = ["devops-private-subnet"]
 
-  # Route table names
+  # Route tables
   public_route_table_tags = {
-    Name = var.public_route_table_name
+    Name = "devops-public-route"
   }
 
   private_route_table_tags = {
-    Name = var.private_route_table_name
+    Name = "devops-private-route"
   }
 
   # Internet Gateway
   create_igw = true
   igw_tags = {
-    Name = var.igw_name
+    Name = "devops-igw"
   }
 
   # NAT Gateway
   enable_nat_gateway = true
   single_nat_gateway = true
   nat_gateway_tags = {
-    Name = var.nat_gateway_name
+    Name = "devops-ngw"
   }
 
   tags = {

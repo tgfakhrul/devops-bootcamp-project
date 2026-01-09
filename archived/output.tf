@@ -9,12 +9,12 @@ output "vpc_name" {
 # Security Group Names
 output "public_security_group_name" {
   description = "Public Security Group Name"
-  value       = module.security_group_public.security_group_name
+  value       = resource.aws_security_group.public.name
 }
 
 output "private_security_group_name" {
   description = "Private Security Group Name"
-  value       = module.security_group_private.security_group_name
+  value       = resource.aws_security_group.private.name
 }
 
 # Subnet Names
