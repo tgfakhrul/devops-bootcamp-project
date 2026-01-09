@@ -1,27 +1,19 @@
-# inventory.tftpl
-
-[nodes]
-%{ for instance in instances ~}
-${instance.tags_all.Name} ansible_host=${instance.private_ip}
-%{ endfor ~}
-
 [web_server]
-${web_server.tags_all.Name} ansible_host=${web_server.private_ip}
+web-server ansible_host=${web_server_id} instance_id=${web_server_id} private_ip=${web_server_private_ip} public_ip=${web_server_public_ip}
 
 [ansible_controller]
-${ansible_controller.tags_all.Name} ansible_host=${ansible_controller.private_ip}
+ansible-controller ansible_host=${ansible_controller_id} instance_id=${ansible_controller_id} private_ip=${ansible_controller_private_ip} public_ip=${ansible_controller_public_ip}
 
 [monitoring_server]
-${monitoring_server.tags_all.Name} ansible_host=${monitoring_server.private_ip}
+monitoring-server ansible_host=${monitoring_server_id} instance_id=${monitoring_server_id} private_ip=${monitoring_server_private_ip} public_ip=${monitoring_server_public_ip}
 
 [prometheus_exporters]
-%{ for exporter in prometheus_node_exporter ~}
-${exporter.tags_all.Name} ansible_host=${exporter.private_ip}
-%{ endfor ~}
-
-[ecr_repo] repo_url=${ecr_repo_url}
+web-server ansible_host=${web_server_id}
+ansible-controller ansible_host=${ansible_controller_id}
+monitoring-server ansible_host=${monitoring_server_id}
 
 [all:vars]
 ansible_user=ubuntu
 ansible_connection=amazon.aws.aws_ssm
 ansible_python_interpreter=/usr/bin/python3
+repo_url=${ecr_repo_url}
