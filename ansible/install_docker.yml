@@ -1,0 +1,71 @@
+---
+- name: Install and verify Docker on all servers
+  hosts: monitoring
+  become: true
+  gather_facts: yes
+
+  vars:
+    docker_packages_debian:
+      - apt-transport-https
+      - ca-certificates
+      - curl
+      - gnupg
+      - lsb-release
+
+  tasks:
+    - name: Update apt cache (Debian/Ubuntu)
+      apt:
+        update_cache: yes
+      when: ansible_os_family == "Debian"
+
+    - name: Install prerequisite packages (Debian/Ubuntu)
+      apt:
+        name: "{{ docker_packages_debian }}"
+        state: present
+      when: ansible_os_family == "Debian"
+
+    - name: Install Docker (Debian/Ubuntu)
+      apt:
+        name: docker.io
+        state: present
+      when: ansible_os_family == "Debian"
+
+    - name: Install Docker (Amazon Linux / RHEL / CentOS)
+      yum:
+        name: docker
+        state: present
+      when: ansible_os_family in ["RedHat", "Amazon"]
+
+    - name: Enable and start Docker service
+      systemd:
+        name: docker
+        state: started
+        enabled: yes
+
+    - name: Add user to docker group
+      user:
+        name: "{{ ansible_user }}"
+        groups: docker
+        append: yes
+
+    - name: Restart Docker to apply group changes
+      systemd:
+        name: docker
+        state: restarted
+
+    - name: Get Docker version
+      command: docker --version
+      register: docker_version
+      changed_when: false
+
+    - name: Get Docker service status
+      command: systemctl is-active docker
+      register: docker_status
+      changed_when: false
+
+    - name: Display Docker installation result
+      debug:
+        msg:
+          - "Host: {{ inventory_hostname }}"
+          - "Docker Version: {{ docker_version.stdout }}"
+          - "Docker Service Status: {{ docker_status.stdout }}"

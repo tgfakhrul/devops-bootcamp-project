@@ -4,57 +4,38 @@
 ########################################
 - name: Install Docker on Monitoring Server
   hosts: monitoring
-  become: yes
-  gather_facts: true
+  gather_facts: false
 
   tasks:
     - name: Update apt cache
-      apt:
-        update_cache: yes
+      raw: apt-get update -y
 
     - name: Install Docker
-      apt:
-        name: docker.io
-        state: present
+      raw: apt-get install -y docker.io
 
     - name: Enable and start Docker
-      service:
-        name: docker
-        state: started
-        enabled: yes
-
-    - name: Add ubuntu user to docker group
-      user:
-        name: ubuntu
-        groups: docker
-        append: yes
+      raw: |
+        systemctl enable docker
+        systemctl start docker
 
 ########################################
 # Deploy Prometheus (Docker)
 ########################################
 - name: Deploy Prometheus
   hosts: monitoring
-  become: yes
+  gather_facts: false
 
   tasks:
     - name: Create Prometheus config directory
-      file:
-        path: /opt/prometheus
-        state: directory
-        owner: ubuntu
-        group: ubuntu
-        mode: '0755'
+      raw: mkdir -p /opt/prometheus
 
     - name: Copy Prometheus config
       copy:
         src: prometheus/prometheus.yml
         dest: /opt/prometheus/prometheus.yml
-        owner: ubuntu
-        group: ubuntu
-        mode: '0644'
 
     - name: Run Prometheus container
-      docker_container:
+      community.docker.docker_container:
         name: prometheus
         image: prom/prometheus:latest
         state: started
@@ -69,11 +50,11 @@
 ########################################
 - name: Deploy Grafana
   hosts: monitoring
-  become: yes
+  gather_facts: false
 
   tasks:
     - name: Run Grafana container
-      docker_container:
+      community.docker.docker_container:
         name: grafana
         image: grafana/grafana:latest
         state: started

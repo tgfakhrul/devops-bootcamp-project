@@ -1,71 +1,75 @@
+# AWS & Networking
 variable "region" {
-  description = "AWS Region"
-  type = string
-  default = "ap-southeast-1"
+  description = "AWS region"
+  type        = string
+  default     = "ap-southeast-1"
 }
 
 variable "azs" {
   description = "Availability Zones"
-  type = list(string)
-  default = ["ap-southeast-1a"]
+  type        = list(string)
+  default     = ["ap-southeast-1a"]
 }
 
 variable "vpc_name" {
-  description = "VPC Name"
-  type = string
+  description = "VPC name"
+  type        = string
 }
 
 variable "public_subnet_name" {
-    description = "Public Subnet Name"
-    type = string
+  description = "Public subnet name"
+  type        = string
 }
 
 variable "private_subnet_name" {
-    description = "Private Subnet Name"
-    type = string     
+  description = "Private subnet name"
+  type        = string
 }
 
 variable "public_route_table_name" {
-    description = "Public Route Table Name"
-    type = string
+  description = "Public route table name"
+  type        = string
 }
 
 variable "private_route_table_name" {
-    description = "Private Route Table Name"
-    type = string
+  description = "Private route table name"
+  type        = string
 }
 
 variable "igw_name" {
-    description = "Internet Gateway Name"
-    type = string
+  description = "Internet Gateway name"
+  type        = string
 }
 
 variable "nat_gateway_name" {
-    description = "NAT Gateway Name"
-    type = string
+  description = "NAT Gateway name"
+  type        = string
 }
 
+# EC2 Configuration
 variable "instance_type" {
-  description = "Default Instance Type"
-  default = "t3.micro"
+  description = "EC2 instance type"
+  type        = string
+  default     = "t3.micro"
 }
 
 variable "ami" {
-  description = "AMI Version"
-  type = string
+  description = "AMI ID (Ubuntu 24.04)"
+  type        = string
 }
 
+# Static Private IPs
 variable "web_server_ip" {
-  type = string
-  description = "Web Server Private IP"
+  description = "Web server private IP"
+  type        = string
 }
 
 variable "ansible_ip" {
-  description = "Ansible Controller Private IP"
-  type = string
+  description = "Ansible controller private IP"
+  type        = string
 }
 
 variable "monitoring_server_ip" {
-  type = string
-  description = "Monitoring Server Private IP"
+  description = "Monitoring server private IP"
+  type        = string
 }

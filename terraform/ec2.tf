@@ -64,12 +64,6 @@ module "ec2_ansible_controller" {
 #!/bin/bash
 hostnamectl set-hostname ansible-controller
 echo "preserve_hostname: true" > /etc/cloud/cloud.cfg.d/99_hostname.cfg
-
-apt update -y
-apt upgrade -y
-apt install -y pipx
-pipx install --include-deps ansible
-pipx ensurepath
 EOF
 
   tags = {

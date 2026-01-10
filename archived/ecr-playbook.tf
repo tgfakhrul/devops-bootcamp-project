@@ -3,7 +3,7 @@
 # Build & Push Docker Image to ECR
 ########################################
 resource "local_file" "ecr_build_push_playbook" {
-  filename = "../ansible/build_and_push_ecr.yml"
+  filename = "${path.module}/../ansible/build_and_push_ecr.yml"
 
   content = <<-EOF
 ---
@@ -15,18 +15,7 @@ resource "local_file" "ecr_build_push_playbook" {
   connection: local
   gather_facts: false
 
-  vars:
-    repo_url: "${aws_ecr_repository.final_project.repository_url}"
-    aws_region: "${var.region}"
-
   tasks:
-    - name: Login to Amazon ECR (AWS CLI – stable)
-      shell: |
-        aws ecr get-login-password --region {{ aws_region }} \
-        | docker login --username AWS --password-stdin {{ repo_url | regex_replace('/.*$', '') }}
-      args:
-        executable: /bin/bash
-
     - name: Clone lab-final-project repo
       git:
         repo: "https://github.com/Infratify/lab-final-project.git"
