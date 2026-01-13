@@ -1,6 +1,6 @@
 ---
 - name: Install Docker on servers
-  hosts: web
+  hosts: all
   become: yes
 
   tasks:

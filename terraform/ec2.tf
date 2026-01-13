@@ -16,7 +16,7 @@ module "ec2_webserver" {
     module.devops_public_sg.security_group_id
   ]
 
-  iam_instance_profile = aws_iam_instance_profile.devops_ssm_profile.name
+  iam_instance_profile = aws_iam_instance_profile.ec2_profile.name
   key_name = aws_key_pair.ansible.key_name
 
   user_data = <<-EOF
@@ -61,39 +61,50 @@ module "ec2_ansible_controller" {
     module.devops_private_sg.security_group_id
   ]
 
-  iam_instance_profile = aws_iam_instance_profile.devops_ssm_profile.name
+  iam_instance_profile = aws_iam_instance_profile.ec2_profile.name
   key_name = aws_key_pair.ansible.key_name
 
+  user_data_replace_on_change = true
   user_data = <<-EOF
-#!/bin/bash
-hostnamectl set-hostname ansible-controller
-echo "preserve_hostname: true" > /etc/cloud/cloud.cfg.d/99_hostname.cfg
-#wait 2 minutes for ssm-user to be created
-sleep 120
+                #!/bin/bash
 
-# create ssh folder
-mkdir -p /home/ubuntu/.ssh
-chmod 700 /home/ubuntu/.ssh
+                #wait 2 minutes for ssm-user to be created
+                sleep 120
 
-# add private key to ssh folder
-cat > /home/ubuntu/.ssh/ansible-key.pem << 'PRIVKEY'
-${tls_private_key.ssh_key.private_key_pem}
-PRIVKEY
+                # set hostname
+                hostnamectl set-hostname ansible-controller
+                echo "preserve_hostname: true" > /etc/cloud/cloud.cfg.d/99_hostname
 
-chmod 600 /home/ubuntu/.ssh/ansible-key.pem
-chown ubuntu:ubuntu /home/ubuntu/.ssh -R
+                # create ssh folder
+                mkdir -p /home/ubuntu/.ssh
+                chmod 700 /home/ubuntu/.ssh
 
-# For ssm-user
-mkdir -p /home/ssm-user/.ssh
-cp /home/ubuntu/.ssh/ansible-key.pem /home/ssm-user/.ssh/
-chown ssm-user:ssm-user /home/ssm-user/.ssh/ansible-key.pem
-chmod 600 /home/ssm-user/.ssh/ansible-key.pem
-chown ssm-user:ssm-user /home/ssm-user/.ssh -R
+                # add private key to ssh folder
+                cat > /home/ubuntu/.ssh/ansible-key.pem << 'PRIVKEY'
+                ${tls_private_key.ssh_key.private_key_pem}
+                PRIVKEY
 
-apt update && apt upgrade -y
-apt install -y ansible
-EOF
+                chmod 600 /home/ubuntu/.ssh/ansible-key.pem
+                chown ubuntu:ubuntu /home/ubuntu/.ssh -R
+                
+            
+                # For ssm-user
+                mkdir -p /home/ssm-user/.ssh
+                cp /home/ubuntu/.ssh/ansible-key.pem /home/ssm-user/.ssh/
+                chown ssm-user:ssm-user /home/ssm-user/.ssh/ansible-key.pem
+                chmod 600 /home/ssm-user/.ssh/ansible-key.pem
+                chown ssm-user:ssm-user /home/ssm-user/.ssh -R
 
+                # Pre-create Ansible directories for ssm-user
+                mkdir -p /home/ssm-user/.ansible/tmp
+                chown -R ssm-user:ssm-user /home/ssm-user/.ansible
+                chmod -R 700 /home/ssm-user/.ansible
+
+                apt update && apt upgrade -y
+                apt install -y ansible
+                ansible-galaxy install geerlingguy.docker
+                EOF
+                
   tags = {
     Name        = "ansible-controller"
     Environment = "dev"
@@ -120,7 +131,7 @@ module "ec2_monitoring_server" {
     module.devops_private_sg.security_group_id
   ]
 
-  iam_instance_profile = aws_iam_instance_profile.devops_ssm_profile.name
+  iam_instance_profile = aws_iam_instance_profile.ec2_profile.name
   key_name = aws_key_pair.ansible.key_name
 
   user_data = <<-EOF

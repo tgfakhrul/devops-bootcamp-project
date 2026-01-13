@@ -1,0 +1,14 @@
+---
+- name: Deploy Grafana
+  hosts: monitoring
+  become: yes
+
+  tasks:
+    - name: Run Grafana container
+      docker_container:
+        name: grafana
+        image: grafana/grafana
+        state: started
+        restart_policy: always
+        ports:
+          - "3000:3000"

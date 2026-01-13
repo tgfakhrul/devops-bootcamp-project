@@ -1,5 +1,4 @@
-# Assume Role Policy for EC2
-data "aws_iam_policy_document" "instance_assume_role_policy" {
+data "aws_iam_policy_document" "ec2_assume_role_policy" {
   statement {
     actions = ["sts:AssumeRole"]
 
@@ -10,33 +9,24 @@ data "aws_iam_policy_document" "instance_assume_role_policy" {
   }
 }
 
-# IAM Role for EC2 (SSM)
-resource "aws_iam_role" "instance" {
-  name               = "devops-ec2-ssm-role"
+resource "aws_iam_role" "ec2_ssm_role" {
+  name               = "instance_role"
   path               = "/system/"
-  assume_role_policy = data.aws_iam_policy_document.instance_assume_role_policy.json
-
-  tags = {
-    Name        = "devops-ec2-ssm-role"
-    Environment = "dev"
-    ManagedBy   = "terraform"
-  }
+  assume_role_policy = data.aws_iam_policy_document.ec2_assume_role_policy.json
 }
 
-# Attach SSM Managed Policy
-resource "aws_iam_role_policy_attachment" "ssm" {
-  role       = aws_iam_role.instance.name
+resource "aws_iam_role_policy_attachment" "es2_ssm_policy" {
+  role       = aws_iam_role.ec2_ssm_role.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
 }
 
-# Instance Profile
-resource "aws_iam_instance_profile" "devops_ssm_profile" {
-  name = "devops-ssm-instance-profile"
-  role = aws_iam_role.instance.name
+# Add ECR Pull Only policy
+resource "aws_iam_role_policy_attachment" "ec2_ecr_pull_policy" {
+  role       = aws_iam_role.ec2_ssm_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryPullOnly"
 }
 
-# Add ECR Pull Only policy.
-resource "aws_iam_role_policy_attachment" "ec2_ecr_pull_policy" {
-  role       = aws_iam_role.instance.name
-  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryPullOnly"
+resource "aws_iam_instance_profile" "ec2_profile" {
+  name = "bootcamp-ec2-ssm-profile"
+  role = aws_iam_role.ec2_ssm_role.name
 }
