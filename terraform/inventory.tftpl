@@ -1,0 +1,18 @@
+[all]
+web-server ansible_host=${web_server_private_ip} ec2_id=${web_server_id}
+ansible-controller ansible_host=${ansible_controller_private_ip} ec2_id=${ansible_controller_id}
+monitoring-server ansible_host=${monitoring_server_private_ip} ec2_id=${monitoring_server_id}
+
+[web]
+web-server
+
+[ansible_controller]
+ansible-controller
+
+[monitoring]
+monitoring-server
+
+[all:vars]
+ansible_user=ubuntu
+ansible_ssh_private_key_file=${ssh_private_key}
+ansible_python_interpreter=/usr/bin/python3

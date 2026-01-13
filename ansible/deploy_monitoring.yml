@@ -1,0 +1,63 @@
+---
+########################################
+# Install Docker on Monitoring Server
+########################################
+- name: Install Docker on Monitoring Server
+  hosts: monitoring
+  gather_facts: false
+
+  tasks:
+    - name: Update apt cache
+      raw: apt-get update -y
+
+    - name: Install Docker
+      raw: apt-get install -y docker.io
+
+    - name: Enable and start Docker
+      raw: |
+        systemctl enable docker
+        systemctl start docker
+
+########################################
+# Deploy Prometheus (Docker)
+########################################
+- name: Deploy Prometheus
+  hosts: monitoring
+  gather_facts: false
+
+  tasks:
+    - name: Create Prometheus config directory
+      raw: mkdir -p /opt/prometheus
+
+    - name: Copy Prometheus config
+      copy:
+        src: prometheus/prometheus.yml
+        dest: /opt/prometheus/prometheus.yml
+
+    - name: Run Prometheus container
+      community.docker.docker_container:
+        name: prometheus
+        image: prom/prometheus:latest
+        state: started
+        restart_policy: always
+        ports:
+          - "9090:9090"
+        volumes:
+          - /opt/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+
+########################################
+# Deploy Grafana (Docker, Cloudflare-ready)
+########################################
+- name: Deploy Grafana
+  hosts: monitoring
+  gather_facts: false
+
+  tasks:
+    - name: Run Grafana container
+      community.docker.docker_container:
+        name: grafana
+        image: grafana/grafana:latest
+        state: started
+        restart_policy: always
+        ports:
+          - "127.0.0.1:3000:3000"
