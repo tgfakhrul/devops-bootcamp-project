@@ -1,0 +1,53 @@
+---
+- name: Deploy web application container
+  hosts: web
+  become: yes
+
+  vars:
+    aws_region: ap-southeast-1
+    ecr_registry: "260080159789.dkr.ecr.ap-southeast-1.amazonaws.com"
+    ecr_image: "devops-bootcamp/final-project-fakhrul:latest"
+
+  tasks:
+    - name: Install required packages
+      apt:
+        name:
+          - unzip
+          - curl
+        state: present
+        update_cache: yes
+
+    - name: Download AWS CLI v2
+      get_url:
+        url: https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip
+        dest: /tmp/awscliv2.zip
+        mode: '0644'
+
+    - name: Unzip AWS CLI
+      unarchive:
+        src: /tmp/awscliv2.zip
+        dest: /tmp
+        remote_src: yes
+
+    - name: Install AWS CLI v2
+      command: /tmp/aws/install
+      args:
+        creates: /usr/local/bin/aws
+
+    - name: Login to Amazon ECR
+      shell: |
+        aws ecr get-login-password --region {{ aws_region }} \
+        | docker login --username AWS --password-stdin {{ ecr_registry }}
+      args:
+        executable: /bin/bash
+
+    - name: Pull and run web application container
+      docker_container:
+        name: my-devops-project
+        image: "{{ ecr_registry }}/{{ ecr_image }}"
+        state: started
+        restart_policy: always
+        ports:
+          - "80:80"
+        env:
+          USER_NAME: "Fakhrul Aziz"

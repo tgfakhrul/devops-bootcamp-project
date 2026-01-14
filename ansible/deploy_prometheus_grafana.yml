@@ -1,0 +1,64 @@
+- name: Deploy Prometheus and Grafana using Docker
+  hosts: monitoring-server
+  become: true
+
+  vars:
+    prometheus_config: |
+      global:
+        scrape_interval: 15s
+
+      scrape_configs:
+        - job_name: prometheus
+          static_configs:
+            - targets: ['localhost:9090']
+
+    prometheus_data_dir: /opt/prometheus
+    prometheus_config_dir: /opt/prometheus/config
+
+  tasks:
+    - name: Ensure Docker is running
+      service:
+        name: docker
+        state: started
+        enabled: true
+
+    - name: Create Prometheus directories
+      file:
+        path: "{{ item }}"
+        state: directory
+        mode: '0755'
+      loop:
+        - "{{ prometheus_data_dir }}"
+        - "{{ prometheus_config_dir }}"
+
+    - name: Create Prometheus config file
+      copy:
+        dest: "{{ prometheus_config_dir }}/prometheus.yml"
+        mode: '0644'
+        content: "{{ prometheus_config }}"
+
+    - name: Run Prometheus container
+      docker_container:
+        name: prometheus
+        image: prom/prometheus:latest
+        state: started
+        restart_policy: unless-stopped
+        ports:
+          - "9090:9090"
+        volumes:
+          - "{{ prometheus_config_dir }}/prometheus.yml:/etc/prometheus/prometheus.yml:ro"
+          - "{{ prometheus_data_dir }}:/prometheus"
+        command: >
+          --config.file=/etc/prometheus/prometheus.yml
+          --storage.tsdb.path=/prometheus
+
+    - name: Run Grafana container
+      docker_container:
+        name: grafana
+        image: grafana/grafana:latest
+        state: started
+        restart_policy: unless-stopped
+        ports:
+          - "3000:3000"
+        volumes:
+          - grafana_data:/var/lib/grafana
